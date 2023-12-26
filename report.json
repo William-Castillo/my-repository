@@ -4,7 +4,7 @@
     "elements": [
       {
         "line": 11,
-        "name": "Customer Bill Amount Calculation",
+        "name": "Test Customer Bill Amount Calculation",
         "description": "",
         "id": "final-bill-calculation;customer-bill-amount-calculation;;2",
         "type": "scenario",
