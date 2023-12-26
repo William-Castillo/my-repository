@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <stm32f4xx.h>
+
+int dato;
+char Transmit;
+int cont=0;
+
+extern "C"{ //configurar la recepcion "RX"
+void USART1_IRQHandler(void){       //interrupcion por dato recibido
+if(USART1->ISR & 0x20){              //Evaluar si la bandera RX esta activa (si se cumple, indica que se esta recibiendo un dato) bit 5 habilita la interrupcion
+
+dato=USART1->DR;                     //Entonces el dato recibido se guarda en la variable "dato" RDR-guarda dato(maximo 9bits)
+
+       }
+    }
+}
+int main(void){
+	
+	RCC->AHB1ENR=0x02;              // Habilito el puerto B del PIN 6 y 7 para TX y RX
+  GPIOB->MODER |=0xA000;             //Funcion alternante para los pines de Tx y Rx
+  GPIOB->AFR[0] |= 0x77000000;      //Pines 6 Y 7 F07-- TX y RX que funcion alternante va a trabajar F0,F1... AF[0] pines 0 a 7, AFR[1] pines 8 a 15
+
+  //config USART
+  RCC->APB2ENR |=0x10;              //Habilitar el bus de datos para USART
+  USART1->BRR=0x0683;                //Velocidad BRR=FOSC/Baud Rate... FOSC=16Mhz, Baud Rate=9600 
+  USART1->CR1 |=0x28;               //Bit3 TX habilitado, bit5 habilitar interrupcion para RX
+  USART1->CR1 |=2000;               //bit13 enabled USART
+  NVIC_EnableIRQ(USART1_IRQn);     //llama la interrupcion para la Recepcion "RX"
+	
+	
+	//controlamos la transmision o envio de dato
+while(true) {
+USART1->DR =Transmit;	//Transmit-variable(int,float,boolean...) TDR es el dato que vamos a enviar(maximo9bits)
+Transmit='2';
+	// si digamos queremos enviar un 2 como int se pone Transmit=0x32, o si se envia como caracter se define transmit como char y Transmit='2';
+
+	
+while((USART1->SR & 0x80)==0){};   //esperar que la transimision sea completada  bit 7 confirmacion de que se esta enviando el dato
+for(cont=0;cont<300000;cont++);    //delay para que se demore en enviar el otro dato
+Transmit++;      // si por ejemplo enviamos el 2, luego enviara el 3, luego 4, y asi..
+
+}
+	
+		
+	
+}
